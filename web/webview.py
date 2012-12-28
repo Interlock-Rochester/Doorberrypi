@@ -20,13 +20,13 @@ DB = 'doorberry.db'
 
 @route('/')
 def root():
-  return template('interlock')
+  return template('index')
 
 
 @route('/logs')
 def logs():
   if not cookie_check(): redirect("/login")
-  return template('interlock')
+  return template('index')
 
 @route('/login')
 def login():
@@ -83,4 +83,4 @@ def cookie_check():
     return False
 
 
-run(host='0.0.0.0', port=80, debug=True)
+run(host='0.0.0.0', port=8080, debug=True)
