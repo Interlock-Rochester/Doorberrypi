@@ -3,13 +3,12 @@
 
 
 from bottle import run, template, Bottle, route, static_file, request, redirect, response
-import sqlite3
+import sqlite3, hashlib
 from os import path
 
 DB = 'doorberry.db'
 
 #@if not path.exists(USERDB):
-
 
 
 
@@ -31,8 +30,8 @@ def logs():
 @route('/login')
 def login():
   return '''<form method="POST" action="/login">
-    <input name="name" type="text" />
-    <input name="password" type="password" autocomplete="off"/>
+    Username<input name="name" type="text" /></br>
+    Password<input name="password" type="password" autocomplete="off"/>
     <input type="submit" />
    </form>'''
 
@@ -42,8 +41,9 @@ def login_submit():
   password = request.forms.get('password')
   #password verification here
   if check_login(name, password):
-    response.set_cookie("account", name, secret='berticusshairyupperlip')
+    response.set_cookie("login", name, secret='berticusshairyupperlip')
     return "<P>You successfully logged in</P>"
+    redirect('/')
   else:
     return "<P>Who the eff are you?</p>"
   
@@ -65,8 +65,10 @@ def js(filename):
 
 def check_login(name, password):
   #check username and password
+  salt = '*s90'
   conn = sqlite3.connect(DB)
-  results = conn.cursor().execute('SELECT username,password FROM users WHERE username=? AND password=?',(name, password)).fetchone()
+  hashpass = hashlib.md5(salt + password).hexdigest()
+  results = conn.cursor().execute('SELECT username,password FROM users WHERE username=? AND password=?',(name, hashpass)).fetchone()
   conn.close()
 
   if results:
@@ -76,7 +78,7 @@ def check_login(name, password):
 
 def cookie_check():
   #check to see if they've received a cookie
-  username = request.get_cookie("account", secret='berticusshairyupperlip')
+  username = request.get_cookie("login", secret='berticusshairyupperlip')
   if username:
     return True
   else:
