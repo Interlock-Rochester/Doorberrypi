@@ -31,8 +31,11 @@ def logs():
   #timestamp = datetime('now', 'localtime', '-12 hour')
   logs = conn.cursor().execute('SELECT * from log').fetchall()
   return template("logs", tr=logs)
-  
 
+@route('/manage')
+def manage():
+  return('blah')
+  
 @route('/login')
 def login():
   return '''<form method="POST" action="/login">
@@ -91,4 +94,4 @@ def cookie_check():
     return False
 
 
-run(host='0.0.0.0', port=8080, debug=True)
+run(host='0.0.0.0', port=8080, debug=True, reloader=True)
