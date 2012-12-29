@@ -23,6 +23,7 @@ def root():
 
 
 @route('/logs')
+@route('/logs/')
 def logs():
   if not cookie_check(): redirect("/login")
   #return template('index')
