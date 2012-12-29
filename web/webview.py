@@ -25,7 +25,12 @@ def root():
 @route('/logs')
 def logs():
   if not cookie_check(): redirect("/login")
-  return template('index')
+  #return template('index')
+  conn = sqlite3.connect(DB)
+  #timestamp = datetime('now', 'localtime', '-12 hour')
+  logs = conn.cursor().execute('SELECT * from log').fetchall()
+  return template("logs", tr=logs)
+  
 
 @route('/login')
 def login():
