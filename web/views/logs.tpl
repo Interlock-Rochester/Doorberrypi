@@ -4,3 +4,4 @@
   <tr><td>{{x[0]}}</td><td>{{x[1]}}</td></tr>
 %end
 </table>
+%rebase base title='Logs'
