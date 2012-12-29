@@ -2,7 +2,11 @@
 
 
 
-from bottle import run, template, Bottle, route, static_file, request, redirect, response
+from bottle import run, template, Bottle, route, get, static_file, request, redirect, response
+from bottle.ext.websocket import GeventWebSocketServer
+from bottle.ext.websocket import websocket
+from time import sleep
+
 import sqlite3, hashlib
 from os import path
 
@@ -57,6 +61,15 @@ def login_submit():
     return "<P>Who the eff are you?</p>"
   
 
+#websocket route
+@get('/websocket', apply=[websocket])
+def handle_websocket(ws):
+  while True:
+    msg = ws.receive()
+    sleep(0.1)
+    if msg is not None:
+        ws.send("poop" + msg)
+    else: break
 
 #static routes
 @route('/css/<filename>')
@@ -94,4 +107,4 @@ def cookie_check():
     return False
 
 
-run(host='0.0.0.0', port=8080, debug=True, reloader=True)
+run(host='0.0.0.0', port=8080, server=GeventWebSocketServer, debug=True, reloader=True)
