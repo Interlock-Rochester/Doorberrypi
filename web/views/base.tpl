@@ -7,17 +7,15 @@
 
 </head>
 <body>
+%if defined('note'):
+<div id="note">{{note}}</div>
+%end
 
-<div id="nav">
-    <ul id="nav">
-        <li><a href="/logs/" title="Logs">Logs</a></li>
-        <li><a href="/manage/" title="Manage">Manage</a></li>
-    </ul>
+<div id="content">
+%include
 </div>
 
-%include
-
 <script src="http://code.jquery.com/jquery-latest.js"></script>
-<script src="js/bootstrap.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
 </body>
 </html>

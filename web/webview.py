@@ -1,110 +1,99 @@
 #!/usr/bin/python
 
-
-
 from bottle import run, template, Bottle, route, get, static_file, request, redirect, response
-from bottle.ext.websocket import GeventWebSocketServer
-from bottle.ext.websocket import websocket
-from time import sleep
+from bottle.ext.websocket import GeventWebSocketServer, websocket
+from gevent import sleep
 
 import sqlite3, hashlib
 from os import path
 
-DB = 'doorberry.db'
+DATABASE = 'doorberry.db'
 
-#@if not path.exists(USERDB):
+# TODO: check for db existence and initialize or barf
 
-
-
-#LOG: IBUTTON TEXT, DATE date
-#MEMBERS FULLNAME text, EMAIL text, IBUTTON text, STATUS, text
-
+#DB Setup
+#LOG:     DATE date, INFO text
+#MEMBERS: FULLNAME text, IBUTTON text, AUTHORIZED boolean
 
 
 @route('/')
-def root():
-  return template('index')
+def index():
+    if not check_cookie():
+        return template('login', note='please log in')
+    else:
+        return template('index', note='welcome, slacker')
 
-
-@route('/logs')
-@route('/logs/')
-def logs():
-  if not cookie_check(): redirect("/login")
-  #return template('index')
-  conn = sqlite3.connect(DB)
-  #timestamp = datetime('now', 'localtime', '-12 hour')
-  logs = conn.cursor().execute('SELECT * from log').fetchall()
-  return template("logs", tr=logs)
-
-@route('/manage')
-def manage():
-  return('blah')
-  
-@route('/login')
+@route('/', method='POST')
 def login():
-  return '''<form method="POST" action="/login">
-    Username<input name="name" type="text" /></br>
-    Password<input name="password" type="password" autocomplete="off"/>
-    <input type="submit" />
-   </form>'''
+    name = request.forms.get('name')
+    password = request.forms.get('password')
 
-@route('/login', method='POST')
-def login_submit():
-  name = request.forms.get('name')
-  password = request.forms.get('password')
-  #password verification here
-  if check_login(name, password):
-    response.set_cookie("login", name, secret='berticusshairyupperlip')
-    return "<P>You successfully logged in</P>"
-    redirect('/')
-  else:
-    return "<P>Who the eff are you?</p>"
-  
+    if check_login(name, password):
+        response.set_cookie("login", name, secret='berticusshairyupperlip')
+        return template('index', note='login successful')
+    else:
+        return template('login', note='login failed')
 
-#websocket route
-@get('/websocket', apply=[websocket])
-def handle_websocket(ws):
-  while True:
-    msg = ws.receive()
-    sleep(0.1)
-    if msg is not None:
-        ws.send("poop" + msg)
-    else: break
 
-#static routes
+# test websocket route with a plain logfile streamed to clients
+# append text to said file while connected to said socket
+logfile = open("./test.log")
+logfile.seek(0,2)      # Go to the end of the file
+
+sockets = set()
+
+@get('/logsocket', apply=[websocket])
+def handle_logsocket(ws):
+    sockets.add(ws)
+    try:
+        while True:
+            line = logfile.readline()
+            if not line:
+                sleep(0.1)
+                continue
+            for socket in sockets:
+                socket.send(line)
+                socket.send(str(len(sockets)))
+    finally:
+        sockets.discard(ws)
+
+
+# static routes
 @route('/css/<filename>')
 def css(filename):
-  return static_file(filename, root='css')
+    return static_file(filename, root='css')
 
 @route('/images/<filename>')
 def images(filename):
-  return static_file(filename, root='images')
+    return static_file(filename, root='images')
 
 @route('/js/<filename>')
 def js(filename):
-  return static_file(filename, root='js')
+    return static_file(filename, root='js')
 
 
+# helper functions
 def check_login(name, password):
-  #check username and password
-  salt = '*s90'
-  conn = sqlite3.connect(DB)
-  hashpass = hashlib.md5(salt + password).hexdigest()
-  results = conn.cursor().execute('SELECT username,password FROM users WHERE username=? AND password=?',(name, hashpass)).fetchone()
-  conn.close()
+    #check username and password
+    salt = '*s90'
+    conn = sqlite3.connect(DATABASE)
+    hashpass = hashlib.md5(salt + password).hexdigest()
+    results = conn.cursor().execute('SELECT username,password FROM users WHERE username=? AND password=?',(name, hashpass)).fetchone()
+    conn.close()
 
-  if results:
-    return True
-  else:
-    return False
+    if results:
+        return True
+    else:
+        return False
 
-def cookie_check():
-  #check to see if they've received a cookie
-  username = request.get_cookie("login", secret='berticusshairyupperlip')
-  if username:
-    return True
-  else:
-    return False
+def check_cookie():
+    #check to see if they've received a cookie
+    username = request.get_cookie("login", secret='berticusshairyupperlip')
+    if username:
+        return True
+    else:
+        return False
 
 
+# run the durn server
 run(host='0.0.0.0', port=8080, server=GeventWebSocketServer, debug=True, reloader=True)
