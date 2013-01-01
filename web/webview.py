@@ -71,6 +71,9 @@ def images(filename):
 def js(filename):
     return static_file(filename, root='js')
 
+@route('/font/<filename>')
+def font(filename):
+    return static_file(filename, root='font')
 
 # helper functions
 def check_login(name, password):
