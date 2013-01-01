@@ -1,7 +1,6 @@
 # Author: 
-# Description: 
-#
-#
+# Description: iSerial.py is a serial listener that reads information
+# from the LinkUSB iButton reader from iButtonLink. 
 #
 
 
@@ -52,13 +51,19 @@ def main():
     if ser.inWaiting() > 39:
       buffer = ser.readlines()
       serialread = buffer[:2] #take only the last 2 items
-      print(ivalidate(serialread))
+      ibutton = ivalidate(serialread)
 
-      ###
-      #  interface with next portion of code here
-      ###
-
-
+      if ibutton: #check to make sure it is an ibutton
+        conn = sqlite3.connect("dorrberrypi.db")
+        name, status = conn.cursor().execute('SELECT fullname,status from users WHERE ibutton=?',ibutton)
+        if status == "ACTIVE":
+	  ##R
+	  # CODE TO RELEASE THE DOOR HERE
+	  ###
+          print("Member active. Door opened")
+        
+      else: 
+        print("Invalid iButton read. Someone is fucking with the reader")
     else:
       time.sleep(.5)  ##TODO make more elegant
     ##TODO search for properly formatted ibuttons or bail
@@ -94,7 +99,7 @@ def test(ser):
     
 def alert():
   #send alerts when something goes wrong
-  print("yay. alert")
+  print("Something terrible has happened.")
 
 if __name__ == "__main__":
   main()
