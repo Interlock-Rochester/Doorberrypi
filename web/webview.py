@@ -1,11 +1,9 @@
 #!/usr/bin/python
 
-from bottle import run, template, Bottle, route, get, static_file, request, redirect, response
-from bottle.ext.websocket import GeventWebSocketServer, websocket
-from gevent import sleep
+from os import path
+from bottle import run, template, Bottle, route, static_file, request, redirect, response
 
 import sqlite3, hashlib
-from os import path
 
 DATABASE = 'doorberry.db'
 
@@ -33,29 +31,6 @@ def login():
         return template('index', note='login successful')
     else:
         return template('login', note='login failed')
-
-
-# test websocket route with a plain logfile streamed to clients
-# append text to said file while connected to said socket
-logfile = open("./test.log")
-logfile.seek(0,2)      # Go to the end of the file
-
-sockets = set()
-
-@get('/logsocket', apply=[websocket])
-def handle_logsocket(ws):
-    sockets.add(ws)
-    try:
-        while True:
-            line = logfile.readline()
-            if not line:
-                sleep(0.1)
-                continue
-            for socket in sockets:
-                socket.send(line)
-                socket.send(str(len(sockets)))
-    finally:
-        sockets.discard(ws)
 
 
 # static routes
@@ -99,4 +74,4 @@ def check_cookie():
 
 
 # run the durn server
-run(host='0.0.0.0', port=8080, server=GeventWebSocketServer, debug=True, reloader=True)
+run(host='0.0.0.0', port=8080, debug=True, reloader=True)
