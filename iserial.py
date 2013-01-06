@@ -7,9 +7,12 @@
 import serial
 import time, sys, re
 from optparse import OptionParser
+import util.logger as Log
 
+logger = Log.Logging('doorberrypi.db')
 
 def main():
+
   #configure serial interfaces and handle prompts
   parser = OptionParser(usage="%prog -p SERIALPORT", version="%prog 0.1")
   parser.set_defaults(
@@ -47,6 +50,8 @@ def main():
   buffer = []
 
   while True:
+   logger.log("iButton scanning started", "N/A")
+
    try: #print(ser.inWaiting())
     if ser.inWaiting() > 39:
       buffer = ser.readlines()
@@ -61,9 +66,13 @@ def main():
 	  # CODE TO RELEASE THE DOOR HERE
 	  ###
           print("Member active. Door opened")
+	  logger.Log("Door opened", ibutton)
+        else:
+ 	  logger.Log("Inactive member auth attempt", ibutton)
         
       else: 
         print("Invalid iButton read. Someone is fucking with the reader")
+       
     else:
       time.sleep(.5)  ##TODO make more elegant
     ##TODO search for properly formatted ibuttons or bail
