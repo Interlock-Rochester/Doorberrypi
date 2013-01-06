@@ -21,7 +21,7 @@ class Sqlite:
      qm = "?," * len(values)
      qm = qm[:-1]
      sql = 'INSERT INTO %s VALUES(%s)' % (table, qm)
-     print(sql)
+     sql = stripper(sql)
      conn = sqlite3.connect(self.database) ##TODO fix
      conn.execute(sql, values)
      conn.commit()
@@ -32,4 +32,11 @@ class Sqlite:
 
    def create(self, table):
      """Create the table structure based on the project's constrains"""
+
+
+def stripper(sql):
+   """strip out dangerous or invalid values from sql statement"""
+   return sql
+
+   
 
