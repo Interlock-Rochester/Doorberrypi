@@ -4,7 +4,7 @@ import os
 
 class Sqlite:
    def __init__(self):
-     self.database = '../doorberrypi.db'
+     self.database = 'doorberrypi.db'
      if not os.path.exists(self.database):
        print("Database %s not found" % self.database)
        exit()
@@ -22,21 +22,43 @@ class Sqlite:
      qm = qm[:-1]
      sql = 'INSERT INTO %s VALUES(%s)' % (table, qm)
      sql = stripper(sql)
-     conn = sqlite3.connect(self.database) ##TODO fix
-     conn.execute(sql, values)
-     conn.commit()
+     result = self.execute(sql, values)
+     return result
 
-   def select(self, table, values=None):
+   def select(self, table, where=None, values=None):
      """Select statement for sqlite3 databases"""
-     print("You are using the select method")
-
+     if values == None:
+       item = '*'
+     else:
+       for i in values:
+         item += i + ","
+       item = item[:-1]
+     sql = 'SELECT %s from %s' % (item, table)
+     if where: sql += " WHERE %s" % where
+     result = self.execute(sql)
+     return result
+      
    def create(self, table):
-     """Create the table structure based on the project's constrains"""
+     """Create the table structure based on the project's constraints"""
+     
+
+   def execute(self, sql, values):
+     """Execute the sql query"""
+     try: 
+        conn = sqlite3.connect(self.database)
+        result = conn.execute(sql, values).fetchall()
+        conn.commit()
+        conn.close()
+     except:
+  	result = None
+        print("Could not execute query: \n %s" % sql)
+     return result
 
 
 def stripper(sql):
    """strip out dangerous or invalid values from sql statement"""
    return sql
+
 
    
 
