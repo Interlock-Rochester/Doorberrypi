@@ -2,28 +2,23 @@
 
 import multiprocessing
 import time, datetime
-import sqlite3
+import db
 
 
-class Logging(object):
+class Logger(object):
 
-   def __init__(self, database ):
-      conn = sqlite3.connect(database)
-      conn.execute('CREATE TABLE IF NOT EXISTS log(date text, level text, action text, uid text)')
-      conn.commit()
-      self.conn = conn
-      
+   def __init__(self):
+      ##TODO: fork into a queue thread to send database functions to
+      self.table = "log"
 
-   def log(self, action, uid=None, level="INFO" ):
+   def add(self, action, uid=None, level="INFO" ):
       """Function that listens for the type of event (ie Door open) and optionally, 
       the user associated to the activity (ie ibutton ID). The timestamp is automatically generated"""
 
-
-      #connect to sqlite database
       timestamp = str(datetime.datetime.now())
-      sql = 'INSERT INTO log VALUES(?, ?, ?, ?)'
-      self.conn.execute(sql, (timestamp, level, action, uid))
-      self.conn.commit()
+      values = [timestamp, level, action, uid]
+      logdb = db.Sqlite()
+      logdb.insert(self.table, values)
 
    def queue(self):
       self.queue = multiprocessing.Queue()
@@ -41,6 +36,6 @@ if __name__ == '__main__':
    #p.start()
 
    #queue.put(Logging('Door Open', "Mark"))
-   logs = Logging(DATABASE)
+   logs = Logging()
    logs.log("Door open", "Mark")
 
