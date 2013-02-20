@@ -40,7 +40,12 @@ class Sqlite:
       
    def create(self, table):
      """Create the table structure based on the project's constraints"""
-     
+
+   def delete(self, table, expr=None):
+     """Delete a record"""
+     sql = 'DELETE FROM %s where (%s)' (where, expr)
+     result = self.execute(sql)
+     return result
      
 
    def execute(self, sql, values):
