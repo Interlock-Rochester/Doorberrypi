@@ -25,6 +25,7 @@ class Logger(object):
 
 
 
+
 def worker(q):
    obj = q.get()
    obj.log()

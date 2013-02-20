@@ -3,8 +3,8 @@ import os
 
 
 class Sqlite:
-   def __init__(self):
-     self.database = 'doorberrypi.db'
+   def __init__(self, database):
+     self.database = database
      if not os.path.exists(self.database):
        print("Database %s not found" % self.database)
        exit()
@@ -40,6 +40,7 @@ class Sqlite:
       
    def create(self, table):
      """Create the table structure based on the project's constraints"""
+     
      
 
    def execute(self, sql, values):
