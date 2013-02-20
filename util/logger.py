@@ -26,17 +26,17 @@ class Logger(object):
 
 
 
-def worker(q):
-   obj = q.get()
-   obj.log()
+#def worker(q):
+#   obj = q.get()
+#   obj.log()
 
-if __name__ == '__main__':
+#if __name__ == '__main__':
    #queue = multiprocessing.Queue()
 
    #p = multiprocessing.Process(target=worker, args=(queue,))
    #p.start()
 
    #queue.put(Logging('Door Open', "Mark"))
-   logs = Logging()
-   logs.log("Door open", "Mark")
+#   logs = Logging()
+#   logs.log("Door open", "Mark")
 
